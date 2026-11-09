@@ -533,12 +533,15 @@ importers:
       input-otp:
         specifier: ^1.4.2
         version: 1.5.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      lightningcss-win32-x64-msvc:
+        specifier: 1.33.0
+        version: 1.33.0
       lucide-react:
         specifier: 'catalog:'
         version: 0.545.0(react@19.1.0)
       next:
         specifier: ^16.4.5
-        version: 16.4.5(@types/node@25.9.9)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        version: 16.4.5(@babel/core@7.29.7)(@types/node@25.9.9)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       next-themes:
         specifier: ^0.4.6
         version: 0.4.6(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -2613,6 +2616,12 @@ packages:
     cpu: [x64]
     os: [linux]
     libc: [glibc]
+
+  lightningcss-win32-x64-msvc@1.33.0:
+    resolution: {integrity: sha512-OlEICDx/Xl0FqSp4bry8zFnCvGpig3Gl4gCquvYwHuqJKEC1+n9NgDniFvqHGmMv1ZkqDJrDqKKSykTDX+ehuA==}
+    engines: {node: '>= 12.0.0'}
+    cpu: [x64]
+    os: [win32]
 
   lightningcss@1.32.0:
     resolution: {integrity: sha512-NXYBzinNrblfraPGyrbPoD19C1h9lfI/1mzgWYvXUTe414Gz/X1FD2XBZSZM7rRTrMA8JL3OtAaGifrIKhQ5yQ==}
@@ -5241,6 +5250,8 @@ snapshots:
   lightningcss-linux-x64-gnu@1.33.0:
     optional: true
 
+  lightningcss-win32-x64-msvc@1.33.0: {}
+
   lightningcss@1.32.0:
     dependencies:
       detect-libc: 2.1.2
@@ -5319,7 +5330,7 @@ snapshots:
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
 
-  next@16.4.5(@types/node@25.9.9)(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
+  next@16.4.5(@babel/core@7.29.7)(@types/node@25.9.9)(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
     dependencies:
       '@next/env': 16.4.5
       '@swc/helpers': 0.5.23
@@ -5328,7 +5339,7 @@ snapshots:
       postcss: 8.5.23
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
-      styled-jsx: 5.1.6(react@19.1.0)
+      styled-jsx: 5.1.6(@babel/core@7.29.7)(react@19.1.0)
     optionalDependencies:
       '@next/swc-darwin-arm64': 16.4.5
       '@next/swc-darwin-x64': 16.4.5
@@ -5846,10 +5857,12 @@ snapshots:
 
   strip-json-comments@5.0.3: {}
 
-  styled-jsx@5.1.6(react@19.1.0):
+  styled-jsx@5.1.6(@babel/core@7.29.7)(react@19.1.0):
     dependencies:
       client-only: 0.0.1
       react: 19.1.0
+    optionalDependencies:
+      '@babel/core': 7.29.7
 
   tagged-tag@1.0.0: {}
 
