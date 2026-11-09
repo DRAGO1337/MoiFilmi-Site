@@ -90,6 +90,19 @@ export interface CatalogTitle {
   playbackUrl: string | null;
 }
 
+/**
+ * @nullable
+ */
+export type EpisodeVideoStatus = typeof EpisodeVideoStatus[keyof typeof EpisodeVideoStatus] | null;
+
+
+export const EpisodeVideoStatus = {
+  pending: 'pending',
+  processing: 'processing',
+  ready: 'ready',
+  failed: 'failed',
+} as const;
+
 export interface Episode {
   id: string;
   seriesId: string;
@@ -100,6 +113,10 @@ export interface Episode {
   /** @nullable */
   releaseDate: string | null;
   durationSeconds: number;
+  /** @nullable */
+  videoStatus: EpisodeVideoStatus;
+  /** @nullable */
+  playbackUrl: string | null;
 }
 
 export interface SeasonDetail {

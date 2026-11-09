@@ -70,6 +70,7 @@
   },
   "dependencies": {
     "@clerk/react": "^6.18.6",
-    "@clerk/themes": "^2.4.57"
+    "@clerk/themes": "^2.4.57",
+    "hls.js": "^1.7.4"
   }
 }

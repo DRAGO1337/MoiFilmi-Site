@@ -758,7 +758,9 @@ components:
         description: { type: string }
         releaseDate: { type: ["string", "null"], format: date }
         durationSeconds: { type: integer }
-      required: [id, seriesId, seasonId, episodeNumber, title, description, releaseDate, durationSeconds]
+        videoStatus: { type: ["string", "null"], enum: [pending, processing, ready, failed, null] }
+        playbackUrl: { type: ["string", "null"] }
+      required: [id, seriesId, seasonId, episodeNumber, title, description, releaseDate, durationSeconds, videoStatus, playbackUrl]
     EpisodeInput:
       type: object
       properties:

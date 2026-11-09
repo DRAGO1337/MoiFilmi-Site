@@ -79,7 +79,9 @@ export const GetCatalogTitleResponse = zod.object({
   "title": zod.string(),
   "description": zod.string(),
   "releaseDate": zod.coerce.date().nullable(),
-  "durationSeconds": zod.number().int()
+  "durationSeconds": zod.number().int(),
+  "videoStatus": zod.union([zod.literal('pending'),zod.literal('processing'),zod.literal('ready'),zod.literal('failed'),zod.literal(null)]).nullable(),
+  "playbackUrl": zod.string().nullable()
 }))
 }))
 }))
@@ -221,7 +223,9 @@ export const GetWatchProgressResponseItem = zod.object({
   "title": zod.string(),
   "description": zod.string(),
   "releaseDate": zod.coerce.date().nullable(),
-  "durationSeconds": zod.number().int()
+  "durationSeconds": zod.number().int(),
+  "videoStatus": zod.union([zod.literal('pending'),zod.literal('processing'),zod.literal('ready'),zod.literal('failed'),zod.literal(null)]).nullable(),
+  "playbackUrl": zod.string().nullable()
 }),zod.null()]),
   "currentTimeSeconds": zod.number().int(),
   "durationSeconds": zod.number().int(),
@@ -273,7 +277,9 @@ export const SaveWatchProgressResponse = zod.object({
   "title": zod.string(),
   "description": zod.string(),
   "releaseDate": zod.coerce.date().nullable(),
-  "durationSeconds": zod.number().int()
+  "durationSeconds": zod.number().int(),
+  "videoStatus": zod.union([zod.literal('pending'),zod.literal('processing'),zod.literal('ready'),zod.literal('failed'),zod.literal(null)]).nullable(),
+  "playbackUrl": zod.string().nullable()
 }),zod.null()]),
   "currentTimeSeconds": zod.number().int(),
   "durationSeconds": zod.number().int(),
@@ -550,7 +556,9 @@ export const CreateEpisodeResponse = zod.object({
   "title": zod.string(),
   "description": zod.string(),
   "releaseDate": zod.coerce.date().nullable(),
-  "durationSeconds": zod.number().int()
+  "durationSeconds": zod.number().int(),
+  "videoStatus": zod.union([zod.literal('pending'),zod.literal('processing'),zod.literal('ready'),zod.literal('failed'),zod.literal(null)]).nullable(),
+  "playbackUrl": zod.string().nullable()
 })
 
 
@@ -586,7 +594,9 @@ export const UpdateEpisodeResponse = zod.object({
   "title": zod.string(),
   "description": zod.string(),
   "releaseDate": zod.coerce.date().nullable(),
-  "durationSeconds": zod.number().int()
+  "durationSeconds": zod.number().int(),
+  "videoStatus": zod.union([zod.literal('pending'),zod.literal('processing'),zod.literal('ready'),zod.literal('failed'),zod.literal(null)]).nullable(),
+  "playbackUrl": zod.string().nullable()
 })
 
 

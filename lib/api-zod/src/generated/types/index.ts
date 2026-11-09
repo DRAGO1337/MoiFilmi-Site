@@ -18,6 +18,7 @@ export * from './catalogTitleVideoStatus';
 export * from './episode';
 export * from './episodeInput';
 export * from './episodeUpdate';
+export * from './episodeVideoStatus';
 export * from './genre';
 export * from './genreInput';
 export * from './getCatalogKind';

@@ -5,6 +5,7 @@
  * MoiFilmi catalog, account, library, playback, and administration API
  * OpenAPI spec version: 0.2.0
  */
+import type { EpisodeVideoStatus } from './episodeVideoStatus';
 
 export interface Episode {
   id: string;
@@ -16,4 +17,8 @@ export interface Episode {
   /** @nullable */
   releaseDate: Date | null;
   durationSeconds: number;
+  /** @nullable */
+  videoStatus: EpisodeVideoStatus;
+  /** @nullable */
+  playbackUrl: string | null;
 }
