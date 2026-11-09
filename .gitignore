@@ -4,6 +4,7 @@
 dist
 tmp
 out-tsc
+/artifacts/stellar-stream/out/
 *.tsbuildinfo
 .expo
 .expo-shared

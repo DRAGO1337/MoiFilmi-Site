@@ -1,14 +1,14 @@
 kind = "web"
 previewPath = "/"
-title = "Stellar Stream"
-description = "A responsive streaming discovery website prototype for browsing and watching films and series that viewers have permission to share."
+title = "MoiFilmi"
+description = "A responsive streaming discovery website for browsing films, series, and other video content."
 version = "1.0.0"
 id = "artifacts/stellar-stream"
 router = "path"
 
 [[services]]
 name = "web"
-paths = [ "/" ]
+paths = [ "/", "/_next/hmr" ]
 localPort = 22221
 
 [services.development]

@@ -22,3 +22,50 @@ button { cursor:pointer; }
 @media(max-width:760px){.topbar{top:10px;left:12px;right:12px;height:58px;padding:0 13px;gap:12px}.mobile-menu{display:grid;place-items:center;width:32px;height:32px;padding:0}.brand{font-size:12px;gap:6px}.brand-mark{font-size:18px}.nav-links{display:none;position:absolute;top:64px;left:0;right:0;height:auto;padding:8px;background:rgba(16,20,28,.97);border:1px solid rgba(255,255,255,.1);border-radius:9px;box-shadow:0 14px 30px #05070a}.nav-links.nav-open{display:grid;grid-template-columns:repeat(3,1fr)}.nav-item{justify-content:center;padding:11px 5px}.top-actions{gap:10px}.search-box{width:36px;height:34px;padding:0 9px;border:0;justify-content:center}.search-box input{width:0;opacity:0;padding:0}.search-box:focus-within,.search-box.search-active{position:absolute;right:49px;width:min(220px,calc(100vw - 180px));background:#151a23;border:1px solid rgba(216,188,122,.5);justify-content:flex-start}.search-box:focus-within input,.search-box.search-active input{width:100%;opacity:1}.search-box svg{flex:none}.avatar{height:27px;width:27px}.hero{min-height:650px;height:88vh;max-height:810px;padding:0 7% 129px;background-position:57% center}.hero:after{background:linear-gradient(180deg,rgba(9,12,18,.54),rgba(9,12,18,.2) 25%,rgba(9,12,18,.25) 50%,#0d1017 100%),linear-gradient(90deg,rgba(8,11,17,.83),rgba(8,11,17,.06))}.hero-content{max-width:440px}.hero h1{font-size:clamp(45px,12vw,66px);margin:18px 0 12px}.hero-description{font-size:13px;max-width:390px}.hero-caption{display:none}.hero-controls{left:7%;right:7%;bottom:44px;justify-content:space-between}.hero-arrows{margin-left:0}.catalog-section{padding:24px 6% 39px}.section-heading{align-items:end;gap:10px}.section-heading h2{font-size:24px}.view-all{font-size:10px;white-space:nowrap}.poster-grid{display:flex;gap:13px;margin-right:-6vw;padding-right:6vw;scroll-snap-type:x mandatory}.poster-card{flex:0 0 40%;scroll-snap-align:start}.poster-card:nth-child(n){display:block}.poster-frame{aspect-ratio:2/2.88}.poster-title-line h3{font-size:12px}.poster-info p{font-size:9px}.collection-note{margin-top:29px}.note-right{display:none}.footer{padding:0 6% 20px}.footer>span:nth-child(2){display:none}}
 @media(max-width:420px){.hero{min-height:620px;padding-bottom:126px}.hero h1{font-size:47px}.eyebrow{font-size:8px;letter-spacing:.1em;gap:6px}.eyebrow-line{width:17px}.hero-description{font-size:12px}.metadata{gap:8px;font-size:10px}.watch-button{height:40px;padding:0 16px;font-size:11px}.round-button{width:39px;height:39px}.section-heading h2{font-size:21px}.section-kicker{font-size:8px}.poster-card{flex-basis:47%}.poster-frame{aspect-ratio:2/2.9}.poster-info{padding-top:9px}.collection-note div span{font-size:10px}.detail-art{height:190px}.detail-copy{padding:0 20px 24px}.detail-copy h2{font-size:33px}.detail-copy>p{font-size:12px}.detail-actions{flex-wrap:wrap}.rights-note{flex-wrap:wrap}.footer-meta{font-size:8px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}
+
+/* MoiFilmi App Router route system */
+.route-banner{height:390px;min-height:340px;position:relative;display:flex;align-items:flex-end;padding:0 8.1% 58px;overflow:hidden;background:#10151d}
+.route-banner::before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(8,11,17,.96),rgba(8,11,17,.78) 44%,rgba(8,11,17,.26)),linear-gradient(0deg,#0d1017 0%,transparent 60%);z-index:1}
+.route-banner-image{position:absolute;inset:0;background:url('/images/poster-sky.jpg') center 38%/cover;opacity:.62;filter:saturate(.72)}
+.route-banner-films .route-banner-image{background-image:url('/images/poster-ember.jpg')}
+.route-banner-series .route-banner-image{background-image:url('/images/poster-orbit.jpg')}
+.route-banner-anime .route-banner-image{background-image:url('/images/poster-sky.jpg')}
+.route-banner-discover .route-banner-image{background-image:url('/images/poster-river.jpg')}
+.route-banner-my-list .route-banner-image{background-image:url('/images/hero-tidal.jpg')}
+.route-banner-search .route-banner-image{background-image:url('/images/poster-city.jpg')}
+.route-banner-copy{position:relative;z-index:2;max-width:730px;animation:heroEnter .5s ease both}
+.route-banner-copy .eyebrow{margin:0 0 16px}
+.route-banner-copy h1{font:600 clamp(38px,5.1vw,66px)/.99 var(--app-font-serif);letter-spacing:-.055em;margin:0 0 14px;text-wrap:balance}
+.route-banner-copy>p:not(.eyebrow){color:#bfc2c8;font-size:14px;line-height:1.7;margin:0;max-width:510px}
+.route-banner-index{position:absolute;right:8.1%;bottom:62px;z-index:2;color:#aaa79c;font:9px var(--app-font-mono);letter-spacing:.12em}
+.banner-jump{display:inline-flex;align-items:center;gap:8px;margin-top:20px;color:#e5d19a;font-size:11px;text-decoration:none}
+.banner-jump:hover{color:#fff}
+.discover-panel{margin:2px 8.1% 25px;padding:24px 26px 20px;border:1px solid rgba(255,255,255,.1);border-radius:8px;background:linear-gradient(120deg,rgba(216,188,122,.075),rgba(255,255,255,.018) 58%);scroll-margin-top:22px}
+.discover-intro{display:flex;align-items:center;gap:12px}.discover-intro .section-kicker{margin-bottom:6px}.discover-intro h2{font:600 20px var(--app-font-serif);margin:0;letter-spacing:-.025em}
+.discover-controls{display:flex;align-items:end;gap:12px;margin:22px 0 18px}
+.discover-controls label{display:grid;gap:7px;color:#a5a9b0;font:9px var(--app-font-mono);letter-spacing:.08em;text-transform:uppercase}
+.discover-controls select{min-width:150px;height:37px;padding:0 30px 0 11px;border-radius:4px;border:1px solid rgba(255,255,255,.15);background:#151a23;color:#e8e9eb;font:11px var(--app-font-sans);text-transform:none;letter-spacing:0}
+.filter-reset{margin-left:auto;background:transparent;border:0;color:#d9c58f;font-size:10px;padding:9px 4px}.filter-reset:hover{text-decoration:underline}
+.mood-shelves{display:flex;gap:9px;flex-wrap:wrap}
+.mood-shelves button{flex:1 1 170px;min-height:58px;text-align:left;padding:10px 13px;border:1px solid rgba(255,255,255,.1);border-radius:5px;background:rgba(8,10,15,.28);color:#e8e6df;font:600 12px var(--app-font-serif);transition:background .2s,border-color .2s}
+.mood-shelves button span{display:block;margin-top:5px;color:#9298a2;font:9px var(--app-font-sans);font-weight:400}
+.mood-shelves button:hover{background:rgba(216,188,122,.09);border-color:rgba(216,188,122,.42)}
+.empty-link{margin-top:17px;color:#ddc88f;border:1px solid rgba(216,188,122,.45);border-radius:5px;padding:9px 14px;font-size:11px;text-decoration:none}
+.loading-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:17px}.loading-grid i{aspect-ratio:2/2.86;border-radius:6px;background:linear-gradient(100deg,#171c25 20%,#202630 35%,#171c25 50%);background-size:220% 100%;animation:skeletonWave 1.6s ease infinite}
+@keyframes skeletonWave{to{background-position-x:-220%}}
+.detail-modal:focus{outline:none}
+button:focus-visible,a:focus-visible,select:focus-visible,.poster-frame:focus-visible{outline:2px solid #e0c982;outline-offset:3px}
+@media(max-width:760px){
+ .route-banner{height:350px;min-height:320px;padding:0 7% 46px}
+ .route-banner-index{right:7%;bottom:20px;font-size:8px}
+ .route-banner-copy h1{font-size:clamp(38px,10vw,54px)}
+ .route-banner-copy>p:not(.eyebrow){font-size:12px;max-width:360px}
+ .discover-panel{margin:0 6% 22px;padding:19px 15px 15px}
+ .discover-controls{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+ .discover-controls select{width:100%;min-width:0}
+ .filter-reset{margin-left:0;justify-self:start}
+ .mood-shelves{display:grid;grid-template-columns:1fr}
+ .mood-shelves button{min-height:54px}
+ .loading-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+}
+@media(max-width:420px){.route-banner{height:325px}.discover-intro h2{font-size:17px}.discover-panel{margin-left:5%;margin-right:5%}}

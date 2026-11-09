@@ -1,6 +1,6 @@
-# [Project name]
+# MoiFilmi
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+A cinematic streaming catalog prototype for browsing films, series, anime, and saved titles.
 
 ## Run & Operate
 
@@ -14,6 +14,7 @@ _Replace the heading above with the project's name, and this line with one sente
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
+- Next.js App Router (static export for the current catalog prototype)
 - API: Express 5
 - DB: PostgreSQL + Drizzle ORM
 - Validation: Zod (`zod/v4`), `drizzle-zod`
@@ -22,15 +23,19 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/stellar-stream/app/` — Next.js routes
+- `artifacts/stellar-stream/src/` — shared catalog UI and styling
+- `artifacts/stellar-stream/public/images/` — original sample title artwork
+- `lib/api-spec/openapi.yaml` — API contract source of truth
+- `lib/db/src/schema/` — database schema
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- The current catalog is a frontend-only prototype; account, catalog, upload, and streaming integrations are future work.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+Viewers can browse films and series, search and filter the sample catalog, save titles to a local watch list, and open title details or a demo preview. Only content the uploader is authorized to distribute should be published.
 
 ## User preferences
 
