@@ -2,21 +2,22 @@ openapi: 3.1.0
 info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
-  version: 0.1.0
-  description: API specification
+  version: 0.2.0
+  description: MoiFilmi catalog, account, library, playback, and administration API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
-    description: Health operations
+  - name: catalog
+  - name: account
+  - name: admin
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,13 +25,807 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /catalog:
+    get:
+      operationId: getCatalog
+      tags: [catalog]
+      summary: Browse published titles
+      parameters:
+        - in: query
+          name: kind
+          schema:
+            type: string
+            enum: [movie, series]
+        - in: query
+          name: search
+          schema:
+            type: string
+        - in: query
+          name: genre
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Published catalog
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CatalogTitle"
+  /catalog/{titleId}:
+    get:
+      operationId: getCatalogTitle
+      tags: [catalog]
+      summary: Get a title and its episodes
+      parameters:
+        - in: path
+          name: titleId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Catalog title details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CatalogDetail"
+        "404":
+          description: Title not found
+  /genres:
+    get:
+      operationId: getGenres
+      tags: [catalog]
+      summary: List available genres
+      responses:
+        "200":
+          description: Genres
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Genre"
+  /account:
+    get:
+      operationId: getAccount
+      tags: [account]
+      summary: Get the signed-in viewer profile
+      responses:
+        "200":
+          description: Viewer profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+        "401":
+          description: Sign in required
+    patch:
+      operationId: updateAccount
+      tags: [account]
+      summary: Update the signed-in viewer profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProfileUpdate"
+      responses:
+        "200":
+          description: Updated viewer profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+  /account/watchlist:
+    get:
+      operationId: getWatchlist
+      tags: [account]
+      summary: List saved titles or favorites
+      parameters:
+        - in: query
+          name: entryKind
+          required: true
+          schema:
+            type: string
+            enum: [watchlist, favorite]
+      responses:
+        "200":
+          description: Saved titles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/WatchlistTitle"
+    post:
+      operationId: addWatchlistEntry
+      tags: [account]
+      summary: Save or favorite a title
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WatchlistInput"
+      responses:
+        "201":
+          description: Saved entry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WatchlistEntry"
+  /account/watchlist/{titleId}/{entryKind}:
+    delete:
+      operationId: deleteWatchlistEntry
+      tags: [account]
+      summary: Remove a saved title or favorite
+      parameters:
+        - in: path
+          name: titleId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: entryKind
+          required: true
+          schema:
+            type: string
+            enum: [watchlist, favorite]
+      responses:
+        "204":
+          description: Entry removed
+  /account/progress:
+    get:
+      operationId: getWatchProgress
+      tags: [account]
+      summary: Continue watching list
+      responses:
+        "200":
+          description: Recent viewing progress
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProgressItem"
+    put:
+      operationId: saveWatchProgress
+      tags: [account]
+      summary: Save playback progress
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProgressInput"
+      responses:
+        "200":
+          description: Saved progress
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProgressItem"
+  /admin/catalog:
+    get:
+      operationId: getAdminCatalog
+      tags: [admin]
+      summary: List all catalog titles
+      responses:
+        "200":
+          description: All catalog titles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CatalogTitle"
+        "403":
+          description: Admin access required
+  /admin/movies:
+    post:
+      operationId: createMovie
+      tags: [admin]
+      summary: Create a movie
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MovieInput"
+      responses:
+        "201":
+          description: Movie created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CatalogTitle"
+  /admin/series:
+    post:
+      operationId: createSeries
+      tags: [admin]
+      summary: Create a series
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SeriesInput"
+      responses:
+        "201":
+          description: Series created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CatalogTitle"
+  /admin/titles/{titleId}:
+    patch:
+      operationId: updateTitle
+      tags: [admin]
+      summary: Edit title details and publication
+      parameters:
+        - in: path
+          name: titleId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TitleUpdate"
+      responses:
+        "200":
+          description: Updated title
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CatalogTitle"
+    delete:
+      operationId: deleteTitle
+      tags: [admin]
+      summary: Delete a title and its media
+      parameters:
+        - in: path
+          name: titleId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Title deleted
+  /admin/series/{seriesId}/seasons:
+    post:
+      operationId: createSeason
+      tags: [admin]
+      summary: Add a season to a series
+      parameters:
+        - in: path
+          name: seriesId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SeasonInput"
+      responses:
+        "201":
+          description: Season created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Season"
+  /admin/seasons/{seasonId}:
+    patch:
+      operationId: updateSeason
+      tags: [admin]
+      summary: Edit a season
+      parameters:
+        - in: path
+          name: seasonId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SeasonUpdate"
+      responses:
+        "200":
+          description: Updated season
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Season"
+    delete:
+      operationId: deleteSeason
+      tags: [admin]
+      summary: Delete a season and its episodes
+      parameters:
+        - in: path
+          name: seasonId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Season deleted
+  /admin/seasons/{seasonId}/episodes:
+    post:
+      operationId: createEpisode
+      tags: [admin]
+      summary: Add an episode to a season
+      parameters:
+        - in: path
+          name: seasonId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EpisodeInput"
+      responses:
+        "201":
+          description: Episode created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Episode"
+  /admin/episodes/{episodeId}:
+    patch:
+      operationId: updateEpisode
+      tags: [admin]
+      summary: Edit an episode
+      parameters:
+        - in: path
+          name: episodeId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EpisodeUpdate"
+      responses:
+        "200":
+          description: Updated episode
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Episode"
+    delete:
+      operationId: deleteEpisode
+      tags: [admin]
+      summary: Delete an episode
+      parameters:
+        - in: path
+          name: episodeId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Episode deleted
+  /admin/genres:
+    get:
+      operationId: getAdminGenres
+      tags: [admin]
+      summary: List genres for editing
+      responses:
+        "200":
+          description: Genres
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Genre"
+    post:
+      operationId: createGenre
+      tags: [admin]
+      summary: Create a genre
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GenreInput"
+      responses:
+        "201":
+          description: Genre created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Genre"
+  /admin/genres/{genreId}:
+    delete:
+      operationId: deleteGenre
+      tags: [admin]
+      summary: Delete a genre
+      parameters:
+        - in: path
+          name: genreId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Genre deleted
+  /admin/artwork/upload-url:
+    post:
+      operationId: createArtworkUpload
+      tags: [admin]
+      summary: Request a direct artwork upload
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ArtworkUploadInput"
+      responses:
+        "200":
+          description: Signed upload URL
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadUrl"
+  /admin/titles/{titleId}/artwork:
+    put:
+      operationId: attachArtwork
+      tags: [admin]
+      summary: Attach uploaded artwork to a title
+      parameters:
+        - in: path
+          name: titleId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ArtworkAttachInput"
+      responses:
+        "200":
+          description: Updated title
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CatalogTitle"
+  /admin/videos/direct-upload-url:
+    post:
+      operationId: createVideoUpload
+      tags: [admin]
+      summary: Request a Cloudflare Stream direct upload
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VideoUploadInput"
+      responses:
+        "201":
+          description: Direct upload URL and pending media record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VideoUpload"
+  /admin/videos/{assetId}:
+    get:
+      operationId: getVideoAsset
+      tags: [admin]
+      summary: Check video processing status
+      parameters:
+        - in: path
+          name: assetId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Video asset status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MediaAsset"
+  /admin/videos/{assetId}/refresh:
+    post:
+      operationId: refreshVideoAsset
+      tags: [admin]
+      summary: Refresh video status from the provider
+      parameters:
+        - in: path
+          name: assetId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Updated video asset status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MediaAsset"
 components:
   schemas:
     HealthStatus:
       type: object
       properties:
-        status:
-          type: string
-      required:
-        - status
-
+        status: { type: string }
+      required: [status]
+    UserProfile:
+      type: object
+      properties:
+        id: { type: string }
+        email: { type: string, format: email }
+        displayName: { type: string }
+        avatarUrl: { type: ["string", "null"] }
+        emailVerified: { type: boolean }
+        role: { type: string, enum: [viewer, admin] }
+        createdAt: { type: string, format: date-time }
+      required: [id, email, displayName, avatarUrl, emailVerified, role, createdAt]
+    ProfileUpdate:
+      type: object
+      properties:
+        displayName: { type: string, minLength: 1, maxLength: 100 }
+      required: [displayName]
+    CatalogTitle:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        kind: { type: string, enum: [movie, series] }
+        title: { type: string }
+        slug: { type: string }
+        description: { type: string }
+        releaseDate: { type: ["string", "null"], format: date }
+        rating: { type: ["number", "null"] }
+        posterUrl: { type: ["string", "null"] }
+        backdropUrl: { type: ["string", "null"] }
+        status: { type: string, enum: [draft, published, unpublished] }
+        genres:
+          type: array
+          items: { type: string }
+        durationSeconds: { type: ["integer", "null"] }
+        videoStatus: { type: ["string", "null"], enum: [pending, processing, ready, failed, null] }
+        playbackUrl: { type: ["string", "null"] }
+      required: [id, kind, title, slug, description, releaseDate, rating, posterUrl, backdropUrl, status, genres, durationSeconds, videoStatus, playbackUrl]
+    CatalogDetail:
+      allOf:
+        - $ref: "#/components/schemas/CatalogTitle"
+        - type: object
+          properties:
+            seasons:
+              type: array
+              items:
+                $ref: "#/components/schemas/SeasonDetail"
+          required: [seasons]
+    SeasonDetail:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        seasonNumber: { type: integer }
+        title: { type: string }
+        episodes:
+          type: array
+          items: { $ref: "#/components/schemas/Episode" }
+      required: [id, seasonNumber, title, episodes]
+    Genre:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        slug: { type: string }
+      required: [id, name, slug]
+    WatchlistEntry:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        titleId: { type: string, format: uuid }
+        entryKind: { type: string, enum: [watchlist, favorite] }
+        createdAt: { type: string, format: date-time }
+      required: [id, titleId, entryKind, createdAt]
+    WatchlistTitle:
+      allOf:
+        - $ref: "#/components/schemas/WatchlistEntry"
+        - type: object
+          properties:
+            title: { $ref: "#/components/schemas/CatalogTitle" }
+          required: [title]
+    WatchlistInput:
+      type: object
+      properties:
+        titleId: { type: string, format: uuid }
+        entryKind: { type: string, enum: [watchlist, favorite] }
+      required: [titleId, entryKind]
+    ProgressItem:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        title: { $ref: "#/components/schemas/CatalogTitle" }
+        episode: { oneOf: [{ $ref: "#/components/schemas/Episode" }, { type: "null" }] }
+        currentTimeSeconds: { type: integer }
+        durationSeconds: { type: integer }
+        completed: { type: boolean }
+        updatedAt: { type: string, format: date-time }
+      required: [id, title, episode, currentTimeSeconds, durationSeconds, completed, updatedAt]
+    ProgressInput:
+      type: object
+      properties:
+        titleId: { type: string, format: uuid }
+        episodeId: { type: ["string", "null"], format: uuid }
+        currentTimeSeconds: { type: integer, minimum: 0 }
+        durationSeconds: { type: integer, minimum: 0 }
+      required: [titleId, episodeId, currentTimeSeconds, durationSeconds]
+    MovieInput:
+      type: object
+      properties:
+        title: { type: string, minLength: 1, maxLength: 200 }
+        slug: { type: string, minLength: 1, maxLength: 220 }
+        description: { type: string, maxLength: 10000 }
+        releaseDate: { type: ["string", "null"], format: date }
+        rating: { type: ["number", "null"], minimum: 0, maximum: 10 }
+        durationSeconds: { type: integer, minimum: 0 }
+        genreIds:
+          type: array
+          items: { type: string, format: uuid }
+        status: { type: string, enum: [draft, published, unpublished] }
+      required: [title, description, releaseDate, rating, durationSeconds, genreIds, status]
+    SeriesInput:
+      type: object
+      properties:
+        title: { type: string, minLength: 1, maxLength: 200 }
+        slug: { type: string, minLength: 1, maxLength: 220 }
+        description: { type: string, maxLength: 10000 }
+        releaseDate: { type: ["string", "null"], format: date }
+        rating: { type: ["number", "null"], minimum: 0, maximum: 10 }
+        genreIds:
+          type: array
+          items: { type: string, format: uuid }
+        status: { type: string, enum: [draft, published, unpublished] }
+      required: [title, description, releaseDate, rating, genreIds, status]
+    TitleUpdate:
+      type: object
+      properties:
+        title: { type: string, minLength: 1, maxLength: 200 }
+        slug: { type: string, minLength: 1, maxLength: 220 }
+        description: { type: string, maxLength: 10000 }
+        releaseDate: { type: ["string", "null"], format: date }
+        rating: { type: ["number", "null"], minimum: 0, maximum: 10 }
+        durationSeconds: { type: integer, minimum: 0 }
+        genreIds:
+          type: array
+          items: { type: string, format: uuid }
+        status: { type: string, enum: [draft, published, unpublished] }
+      minProperties: 1
+    Season:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        seriesId: { type: string, format: uuid }
+        seasonNumber: { type: integer }
+        title: { type: string }
+        description: { type: string }
+      required: [id, seriesId, seasonNumber, title, description]
+    SeasonInput:
+      type: object
+      properties:
+        seasonNumber: { type: integer, minimum: 1 }
+        title: { type: string, maxLength: 200 }
+        description: { type: string, maxLength: 10000 }
+      required: [seasonNumber, title, description]
+    SeasonUpdate:
+      type: object
+      properties:
+        seasonNumber: { type: integer, minimum: 1 }
+        title: { type: string, maxLength: 200 }
+        description: { type: string, maxLength: 10000 }
+      minProperties: 1
+    Episode:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        seriesId: { type: string, format: uuid }
+        seasonId: { type: string, format: uuid }
+        episodeNumber: { type: integer }
+        title: { type: string }
+        description: { type: string }
+        releaseDate: { type: ["string", "null"], format: date }
+        durationSeconds: { type: integer }
+      required: [id, seriesId, seasonId, episodeNumber, title, description, releaseDate, durationSeconds]
+    EpisodeInput:
+      type: object
+      properties:
+        episodeNumber: { type: integer, minimum: 1 }
+        title: { type: string, minLength: 1, maxLength: 200 }
+        description: { type: string, maxLength: 10000 }
+        releaseDate: { type: ["string", "null"], format: date }
+        durationSeconds: { type: integer, minimum: 0 }
+      required: [episodeNumber, title, description, releaseDate, durationSeconds]
+    EpisodeUpdate:
+      type: object
+      properties:
+        episodeNumber: { type: integer, minimum: 1 }
+        title: { type: string, minLength: 1, maxLength: 200 }
+        description: { type: string, maxLength: 10000 }
+        releaseDate: { type: ["string", "null"], format: date }
+        durationSeconds: { type: integer, minimum: 0 }
+      minProperties: 1
+    GenreInput:
+      type: object
+      properties:
+        name: { type: string, minLength: 1, maxLength: 80 }
+      required: [name]
+    ArtworkUploadInput:
+      type: object
+      properties:
+        filename: { type: string, minLength: 1, maxLength: 255 }
+        contentType: { type: string, enum: [image/jpeg, image/png, image/webp] }
+      required: [filename, contentType]
+    UploadUrl:
+      type: object
+      properties:
+        uploadUrl: { type: string, format: uri }
+        objectPath: { type: string }
+      required: [uploadUrl, objectPath]
+    ArtworkAttachInput:
+      type: object
+      properties:
+        kind: { type: string, enum: [poster, backdrop] }
+        objectPath: { type: string, minLength: 1 }
+      required: [kind, objectPath]
+    VideoUploadInput:
+      type: object
+      properties:
+        titleId: { type: string, format: uuid }
+        episodeId: { type: ["string", "null"], format: uuid }
+        maxDurationSeconds: { type: integer, minimum: 1, maximum: 21600 }
+      required: [titleId, episodeId, maxDurationSeconds]
+    VideoUpload:
+      type: object
+      properties:
+        assetId: { type: string, format: uuid }
+        providerUid: { type: string }
+        uploadUrl: { type: string, format: uri }
+      required: [assetId, providerUid, uploadUrl]
+    MediaAsset:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        titleId: { type: string, format: uuid }
+        episodeId: { type: ["string", "null"], format: uuid }
+        provider: { type: string, enum: [cloudflare_stream, replit_object_storage] }
+        kind: { type: string, enum: [video, poster, backdrop] }
+        status: { type: string, enum: [pending, processing, ready, failed] }
+        providerUid: { type: ["string", "null"] }
+        objectPath: { type: ["string", "null"] }
+        playbackUrl: { type: ["string", "null"] }
+        durationSeconds: { type: ["integer", "null"] }
+        createdAt: { type: string, format: date-time }
+      required: [id, titleId, episodeId, provider, kind, status, providerUid, objectPath, playbackUrl, durationSeconds, createdAt]
