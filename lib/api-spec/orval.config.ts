@@ -27,9 +27,13 @@ export default defineConfig({
       client: "react-query",
       mode: "split",
       baseUrl: "/api",
+      packageJson: path.resolve(root, "lib", "api-client-react", "package.json"),
       clean: true,
       prettier: true,
       override: {
+        query: {
+          version: 5,
+        },
         fetch: {
           includeHttpResponseReturnType: false,
         },

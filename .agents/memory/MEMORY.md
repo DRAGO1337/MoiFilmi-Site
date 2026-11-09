@@ -1,1 +1,2 @@
 - [Streaming platform direction](streaming-platform-direction.md) — public film and series catalog with Supabase, Next.js requested, and hosted video under consideration.
+- [Next.js preview origins](nextjs-preview-origins.md) — nested Replit proxy hostnames may need their own allowedDevOrigins pattern for HMR.
