@@ -26,3 +26,6 @@ channel = "stable-25_05"
 
 [userenv.shared]
 MOIFILMI_ADMIN_EMAILS = "x86w@proton.me"
+
+[objectStorage]
+defaultBucketID = "replit-objstore-74fb427a-0434-4776-a9a1-037160eef211"

@@ -23,7 +23,7 @@ export type CloudflareStreamVideo = {
 export class StreamConfigurationError extends Error {
   constructor() {
     super(
-      "Connect a Cloudflare account with Stream permissions to enable video uploads.",
+      "Select the Cloudflare Stream account by setting MOIFILMI_CLOUDFLARE_ACCOUNT_ID.",
     );
     this.name = "StreamConfigurationError";
   }
@@ -46,12 +46,17 @@ async function getAccountId(): Promise<string> {
   const configuredId =
     process.env.MOIFILMI_CLOUDFLARE_ACCOUNT_ID?.trim() ||
     process.env.CLOUDFLARE_ACCOUNT_ID?.trim();
-  if (configuredId) return configuredId;
+  if (configuredId) {
+    if (!/^[a-f0-9]{32}$/i.test(configuredId)) {
+      throw new StreamConfigurationError();
+    }
+    return configuredId;
+  }
   if (cachedAccountId) return cachedAccountId;
 
   const response = await connectors.proxy(
     "cloudflare",
-    "/v4/accounts?per_page=100",
+    "/v4/accounts?per_page=50",
     { method: "GET" },
   );
   let payload: CloudflareEnvelope<Array<{ id?: string }>>;
@@ -60,14 +65,16 @@ async function getAccountId(): Promise<string> {
   } catch {
     throw new StreamApiError("Cloudflare returned an unreadable account response.", response.status);
   }
-  if (!response.ok || !payload.success || !payload.result?.length) {
+  if (!response.ok || !payload.success) {
     const message =
       payload.errors?.map((error) => error.message).filter(Boolean).join("; ") ||
       "Cloudflare did not return an accessible account.";
     throw new StreamApiError(message, response.status);
   }
 
-  const accountIds = payload.result.map((account) => account.id).filter((id): id is string => Boolean(id));
+  const accountIds = (payload.result ?? [])
+    .map((account) => account.id)
+    .filter((id): id is string => Boolean(id));
   if (accountIds.length !== 1) {
     throw new StreamConfigurationError();
   }
