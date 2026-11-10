@@ -1,4 +1,4 @@
-modules = ["web", "bash", "postgresql-16", "nodejs-24"]
+modules = ["web", "bash", "nodejs-24", "postgresql-16"]
 
 [deployment]
 router = "application"
@@ -25,5 +25,4 @@ channel = "stable-25_05"
 [userenv]
 
 [userenv.shared]
-MOIFILMI_INITIAL_ADMIN_EMAIL = "x86w@proton.me"
 MOIFILMI_ADMIN_EMAILS = "x86w@proton.me"
