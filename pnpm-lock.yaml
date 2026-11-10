@@ -163,6 +163,12 @@ importers:
         specifier: ^0.4.3
         version: 0.4.3
     devDependencies:
+      '@esbuild/win32-x64':
+        specifier: 0.28.2
+        version: 0.28.2
+      '@rollup/rollup-win32-x64-msvc':
+        specifier: 4.64.5
+        version: 4.64.5
       prettier:
         specifier: ^3.9.10
         version: 3.9.10
@@ -819,6 +825,12 @@ packages:
     engines: {node: '>=18'}
     cpu: [x64]
     os: [linux]
+
+  '@esbuild/win32-x64@0.28.2':
+    resolution: {integrity: sha512-5ebpxr3nWMzrL/rnUI755Jkuee0bHL/Gq0WTF9lvcpv73wAp5eu8MfBUgWK9bhWvZjj7yX8etf/8tI8Ney695g==}
+    engines: {node: '>=18'}
+    cpu: [x64]
+    os: [win32]
 
   '@floating-ui/core@1.8.0':
     resolution: {integrity: sha512-0CIZ5itps/8x7BG8dEIhs53BvCUH2PCoogtakwRTut+Arm58sJooJ0AuZhLw2HJYIR5cMLNPBSS728sPho2khQ==}
@@ -1846,6 +1858,11 @@ packages:
     cpu: [x64]
     os: [linux]
     libc: [glibc]
+
+  '@rollup/rollup-win32-x64-msvc@4.64.5':
+    resolution: {integrity: sha512-IhV6ew/DuzUWwHaYmlh7MrPCV3lKFUq/amTEwysi4r/mwNPAEfAMh5dYWeTSPTeMy2pFHGMEWYtPkHzfX3tG5A==}
+    cpu: [x64]
+    os: [win32]
 
   '@scalar/helpers@0.16.2':
     resolution: {integrity: sha512-jHSF4KZI/EcVI7WhhgNyw9vvuVCXmwP4rkMXwcaZJjMg1tFPHSOWqIcq123CsUwCMR34SEBAGSJR+Eskrz+7Qg==}
@@ -3873,6 +3890,8 @@ snapshots:
   '@esbuild/linux-x64@0.28.2':
     optional: true
 
+  '@esbuild/win32-x64@0.28.2': {}
+
   '@floating-ui/core@1.8.0':
     dependencies:
       '@floating-ui/utils': 0.2.12
@@ -4881,6 +4900,8 @@ snapshots:
 
   '@rollup/rollup-linux-x64-gnu@4.64.5':
     optional: true
+
+  '@rollup/rollup-win32-x64-msvc@4.64.5': {}
 
   '@scalar/helpers@0.16.2': {}
 
