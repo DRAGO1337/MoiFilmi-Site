@@ -26,6 +26,7 @@ channel = "stable-25_05"
 
 [userenv.shared]
 MOIFILMI_ADMIN_EMAILS = "x86w@proton.me"
+MOIFILMI_CLOUDFLARE_ACCOUNT_ID = "da9556a5eda1beb39089b622cd2c3224"
 
 [objectStorage]
 defaultBucketID = "replit-objstore-74fb427a-0434-4776-a9a1-037160eef211"
