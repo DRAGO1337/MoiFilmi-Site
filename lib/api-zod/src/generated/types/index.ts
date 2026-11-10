@@ -48,6 +48,7 @@ export * from './userProfile';
 export * from './userProfileRole';
 export * from './videoUpload';
 export * from './videoUploadInput';
+export * from './videoUploadUploadProtocol';
 export * from './watchlistEntry';
 export * from './watchlistEntryEntryKind';
 export * from './watchlistInput';

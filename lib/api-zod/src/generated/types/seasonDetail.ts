@@ -11,5 +11,6 @@ export interface SeasonDetail {
   id: string;
   seasonNumber: number;
   title: string;
+  description: string;
   episodes: Episode[];
 }

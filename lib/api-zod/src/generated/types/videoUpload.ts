@@ -5,9 +5,11 @@
  * MoiFilmi catalog, account, library, playback, and administration API
  * OpenAPI spec version: 0.2.0
  */
+import type { VideoUploadUploadProtocol } from './videoUploadUploadProtocol';
 
 export interface VideoUpload {
   assetId: string;
   providerUid: string;
   uploadUrl: string;
+  uploadProtocol: VideoUploadUploadProtocol;
 }

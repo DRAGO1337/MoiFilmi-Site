@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import "../src/index.css";
+import AppProviders from "@/components/app-providers";
 
 export const metadata = {
   title: "MoiFilmi — Good stories travel",
@@ -10,5 +11,16 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
-  return <html lang="en"><body>{children}</body></html>;
+  return (
+    <html lang="en">
+      <body>
+        <AppProviders
+          publishableKey={process.env.CLERK_PUBLISHABLE_KEY ?? ""}
+          proxyUrl={process.env.CLERK_PROXY_URL ?? ""}
+        >
+          {children}
+        </AppProviders>
+      </body>
+    </html>
+  );
 }

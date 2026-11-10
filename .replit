@@ -26,3 +26,4 @@ channel = "stable-25_05"
 
 [userenv.shared]
 MOIFILMI_INITIAL_ADMIN_EMAIL = "x86w@proton.me"
+MOIFILMI_ADMIN_EMAILS = "x86w@proton.me"

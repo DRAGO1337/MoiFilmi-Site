@@ -31,6 +31,8 @@ import {
   DeleteTitleParams,
   GetAdminCatalogResponse,
   GetAdminGenresResponse,
+  GetAdminSeriesDetailParams,
+  GetAdminSeriesDetailResponse,
   UpdateEpisodeBody,
   UpdateEpisodeParams,
   UpdateEpisodeResponse,
@@ -43,7 +45,7 @@ import {
   CreateMovieBody,
   CreateMovieResponse,
 } from "@workspace/api-zod";
-import { toCatalogTitle, toEpisode } from "../lib/catalog";
+import { getSeriesSeasons, toCatalogTitle, toEpisode } from "../lib/catalog";
 import { removeMediaAssets } from "../lib/mediaCleanup";
 import { requireAdmin } from "../middlewares/auth";
 
@@ -159,6 +161,36 @@ router.get("/admin/catalog", async (_req, res): Promise<void> => {
     GetAdminCatalogResponse.parse(
       await Promise.all(titles.map(toCatalogTitle)),
     ),
+  );
+});
+
+router.get("/admin/series/:seriesId", async (req, res): Promise<void> => {
+  const params = GetAdminSeriesDetailParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  const [title] = await db
+    .select()
+    .from(titlesTable)
+    .where(
+      and(
+        eq(titlesTable.id, params.data.seriesId),
+        eq(titlesTable.kind, "series"),
+      ),
+    )
+    .limit(1);
+  if (!title) {
+    res.status(404).json({ error: "Series not found." });
+    return;
+  }
+
+  res.json(
+    GetAdminSeriesDetailResponse.parse({
+      ...(await toCatalogTitle(title)),
+      seasons: await getSeriesSeasons(title.id),
+    }),
   );
 });
 

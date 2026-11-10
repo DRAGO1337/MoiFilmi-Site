@@ -89,7 +89,49 @@ export async function createStreamDirectUpload(input: {
   creator: string;
   titleId: string;
   episodeId: string | null;
-}): Promise<{ uid: string; uploadURL: string }> {
+  uploadLength?: number;
+  filename?: string;
+}): Promise<{ uid: string; uploadURL: string; uploadProtocol: "post" | "tus" }> {
+  if (input.uploadLength && input.uploadLength > 200 * 1024 * 1024) {
+    const { accountId, apiToken } = getConfig();
+    const metadata = [
+      `maxDurationSeconds ${Buffer.from(String(input.maxDurationSeconds)).toString("base64")}`,
+      ...(input.filename
+        ? [`name ${Buffer.from(input.filename.slice(0, 255)).toString("base64")}`]
+        : []),
+    ].join(",");
+    const response = await fetch(
+      `https://api.cloudflare.com/client/v4/accounts/${encodeURIComponent(accountId)}/stream?direct_user=true`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiToken}`,
+          "Tus-Resumable": "1.0.0",
+          "Upload-Length": String(input.uploadLength),
+          "Upload-Metadata": metadata,
+        },
+        signal: AbortSignal.timeout(30_000),
+      },
+    );
+
+    const uploadURL = response.headers.get("Location");
+    if (!response.ok || !uploadURL) {
+      const message = await response.text().catch(() => "");
+      throw new StreamApiError(
+        message || "Cloudflare Stream could not create a resumable upload.",
+        response.status,
+      );
+    }
+    const uid = new URL(uploadURL).pathname.split("/").filter(Boolean).at(-1);
+    if (!uid) {
+      throw new StreamApiError(
+        "Cloudflare Stream returned an invalid resumable upload URL.",
+        502,
+      );
+    }
+    return { uid, uploadURL, uploadProtocol: "tus" };
+  }
+
   const result = await streamRequest<{ uid?: string; uploadURL?: string }>(
     "/direct_upload",
     {
@@ -100,6 +142,7 @@ export async function createStreamDirectUpload(input: {
         meta: {
           titleId: input.titleId,
           episodeId: input.episodeId,
+          filename: input.filename?.slice(0, 255) ?? null,
         },
       }),
     },
@@ -112,7 +155,7 @@ export async function createStreamDirectUpload(input: {
     );
   }
 
-  return { uid: result.uid, uploadURL: result.uploadURL };
+  return { uid: result.uid, uploadURL: result.uploadURL, uploadProtocol: "post" };
 }
 
 export async function getStreamVideo(
