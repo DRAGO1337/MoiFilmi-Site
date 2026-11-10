@@ -71,6 +71,7 @@ export const GetCatalogTitleResponse = zod.object({
   "id": zod.string().uuid(),
   "seasonNumber": zod.number().int(),
   "title": zod.string(),
+  "description": zod.string(),
   "episodes": zod.array(zod.object({
   "id": zod.string().uuid(),
   "seriesId": zod.string().uuid(),
@@ -308,6 +309,50 @@ export const GetAdminCatalogResponseItem = zod.object({
   "playbackUrl": zod.string().nullable()
 })
 export const GetAdminCatalogResponse = zod.array(GetAdminCatalogResponseItem)
+
+
+/**
+ * @summary Get a series with its seasons and episodes
+ */
+export const GetAdminSeriesDetailParams = zod.object({
+  "seriesId": zod.coerce.string().uuid()
+})
+
+export const GetAdminSeriesDetailResponse = zod.object({
+  "id": zod.string().uuid(),
+  "kind": zod.enum(['movie', 'series']),
+  "title": zod.string(),
+  "slug": zod.string(),
+  "description": zod.string(),
+  "releaseDate": zod.coerce.date().nullable(),
+  "rating": zod.number().nullable(),
+  "posterUrl": zod.string().nullable(),
+  "backdropUrl": zod.string().nullable(),
+  "status": zod.enum(['draft', 'published', 'unpublished']),
+  "genres": zod.array(zod.string()),
+  "durationSeconds": zod.number().int().nullable(),
+  "videoStatus": zod.union([zod.literal('pending'),zod.literal('processing'),zod.literal('ready'),zod.literal('failed'),zod.literal(null)]).nullable(),
+  "playbackUrl": zod.string().nullable()
+}).and(zod.object({
+  "seasons": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "seasonNumber": zod.number().int(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "episodes": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "seriesId": zod.string().uuid(),
+  "seasonId": zod.string().uuid(),
+  "episodeNumber": zod.number().int(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "releaseDate": zod.coerce.date().nullable(),
+  "durationSeconds": zod.number().int(),
+  "videoStatus": zod.union([zod.literal('pending'),zod.literal('processing'),zod.literal('ready'),zod.literal('failed'),zod.literal(null)]).nullable(),
+  "playbackUrl": zod.string().nullable()
+}))
+}))
+}))
 
 
 /**
@@ -706,17 +751,23 @@ export const AttachArtworkResponse = zod.object({
 export const createVideoUploadBodyMaxDurationSecondsMax = 21600;
 
 
+export const createVideoUploadBodyFilenameMax = 255;
+
+
 
 export const CreateVideoUploadBody = zod.object({
   "titleId": zod.string().uuid(),
   "episodeId": zod.string().uuid().nullable(),
-  "maxDurationSeconds": zod.number().int().min(1).max(createVideoUploadBodyMaxDurationSecondsMax)
+  "maxDurationSeconds": zod.number().int().min(1).max(createVideoUploadBodyMaxDurationSecondsMax),
+  "uploadLength": zod.number().int().min(1).optional(),
+  "filename": zod.string().max(createVideoUploadBodyFilenameMax).optional()
 })
 
 export const CreateVideoUploadResponse = zod.object({
   "assetId": zod.string().uuid(),
   "providerUid": zod.string(),
-  "uploadUrl": zod.string().url()
+  "uploadUrl": zod.string().url(),
+  "uploadProtocol": zod.enum(['post', 'tus'])
 })
 
 

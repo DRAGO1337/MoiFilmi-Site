@@ -149,6 +149,7 @@ export async function getSeriesSeasons(seriesId: string) {
         id: season.id,
         seasonNumber: season.seasonNumber,
         title: season.title,
+        description: season.description,
         episodes: await Promise.all(episodeRows.map(toEpisode)),
       };
     }),

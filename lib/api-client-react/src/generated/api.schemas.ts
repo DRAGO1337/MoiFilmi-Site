@@ -123,6 +123,7 @@ export interface SeasonDetail {
   id: string;
   seasonNumber: number;
   title: string;
+  description: string;
   episodes: Episode[];
 }
 
@@ -406,12 +407,25 @@ export interface VideoUploadInput {
      * @maximum 21600
      */
   maxDurationSeconds: number;
+  /** @minimum 1 */
+  uploadLength?: number;
+  /** @maxLength 255 */
+  filename?: string;
 }
+
+export type VideoUploadUploadProtocol = typeof VideoUploadUploadProtocol[keyof typeof VideoUploadUploadProtocol];
+
+
+export const VideoUploadUploadProtocol = {
+  post: 'post',
+  tus: 'tus',
+} as const;
 
 export interface VideoUpload {
   assetId: string;
   providerUid: string;
   uploadUrl: string;
+  uploadProtocol: VideoUploadUploadProtocol;
 }
 
 export type MediaAssetProvider = typeof MediaAssetProvider[keyof typeof MediaAssetProvider];

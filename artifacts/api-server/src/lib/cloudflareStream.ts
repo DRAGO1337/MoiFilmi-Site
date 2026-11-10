@@ -1,3 +1,5 @@
+import { ReplitConnectors } from "@replit/connectors-sdk";
+
 type CloudflareEnvelope<T> = {
   success: boolean;
   result?: T;
@@ -21,7 +23,7 @@ export type CloudflareStreamVideo = {
 export class StreamConfigurationError extends Error {
   constructor() {
     super(
-      "Cloudflare Stream is not configured. Set CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN.",
+      "Select the Cloudflare Stream account by setting MOIFILMI_CLOUDFLARE_ACCOUNT_ID.",
     );
     this.name = "StreamConfigurationError";
   }
@@ -37,28 +39,64 @@ export class StreamApiError extends Error {
   }
 }
 
-function getConfig(): { accountId: string; apiToken: string } {
-  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID?.trim();
-  const apiToken = process.env.CLOUDFLARE_API_TOKEN?.trim();
-  if (!accountId || !apiToken) throw new StreamConfigurationError();
-  return { accountId, apiToken };
+const connectors = new ReplitConnectors();
+let cachedAccountId: string | undefined;
+
+async function getAccountId(): Promise<string> {
+  const configuredId =
+    process.env.MOIFILMI_CLOUDFLARE_ACCOUNT_ID?.trim() ||
+    process.env.CLOUDFLARE_ACCOUNT_ID?.trim();
+  if (configuredId) {
+    if (!/^[a-f0-9]{32}$/i.test(configuredId)) {
+      throw new StreamConfigurationError();
+    }
+    return configuredId;
+  }
+  if (cachedAccountId) return cachedAccountId;
+
+  const response = await connectors.proxy(
+    "cloudflare",
+    "/v4/accounts?per_page=50",
+    { method: "GET" },
+  );
+  let payload: CloudflareEnvelope<Array<{ id?: string }>>;
+  try {
+    payload = (await response.json()) as CloudflareEnvelope<Array<{ id?: string }>>;
+  } catch {
+    throw new StreamApiError("Cloudflare returned an unreadable account response.", response.status);
+  }
+  if (!response.ok || !payload.success) {
+    const message =
+      payload.errors?.map((error) => error.message).filter(Boolean).join("; ") ||
+      "Cloudflare did not return an accessible account.";
+    throw new StreamApiError(message, response.status);
+  }
+
+  const accountIds = (payload.result ?? [])
+    .map((account) => account.id)
+    .filter((id): id is string => Boolean(id));
+  if (accountIds.length !== 1) {
+    throw new StreamConfigurationError();
+  }
+  cachedAccountId = accountIds[0];
+  return cachedAccountId;
 }
 
 async function streamRequest<T>(
   endpoint: string,
   init?: RequestInit,
 ): Promise<T> {
-  const { accountId, apiToken } = getConfig();
-  const response = await fetch(
-    `https://api.cloudflare.com/client/v4/accounts/${encodeURIComponent(accountId)}/stream${endpoint}`,
+  const accountId = await getAccountId();
+  const response = await connectors.proxy(
+    "cloudflare",
+    `/v4/accounts/${encodeURIComponent(accountId)}/stream${endpoint}`,
     {
-      ...init,
+      method: init?.method ?? "GET",
       headers: {
-        Authorization: `Bearer ${apiToken}`,
         "Content-Type": "application/json",
-        ...init?.headers,
+        ...Object.fromEntries(new Headers(init?.headers).entries()),
       },
-      signal: init?.signal ?? AbortSignal.timeout(30_000),
+      body: typeof init?.body === "string" ? init.body : undefined,
     },
   );
 
@@ -89,7 +127,48 @@ export async function createStreamDirectUpload(input: {
   creator: string;
   titleId: string;
   episodeId: string | null;
-}): Promise<{ uid: string; uploadURL: string }> {
+  uploadLength?: number;
+  filename?: string;
+}): Promise<{ uid: string; uploadURL: string; uploadProtocol: "post" | "tus" }> {
+  if (input.uploadLength && input.uploadLength > 200 * 1024 * 1024) {
+    const accountId = await getAccountId();
+    const metadata = [
+      `maxDurationSeconds ${Buffer.from(String(input.maxDurationSeconds)).toString("base64")}`,
+      ...(input.filename
+        ? [`name ${Buffer.from(input.filename.slice(0, 255)).toString("base64")}`]
+        : []),
+    ].join(",");
+    const response = await connectors.proxy(
+      "cloudflare",
+      `/v4/accounts/${encodeURIComponent(accountId)}/stream?direct_user=true`,
+      {
+        method: "POST",
+        headers: {
+          "Tus-Resumable": "1.0.0",
+          "Upload-Length": String(input.uploadLength),
+          "Upload-Metadata": metadata,
+        },
+      },
+    );
+
+    const uploadURL = response.headers.get("Location");
+    if (!response.ok || !uploadURL) {
+      const message = await response.text().catch(() => "");
+      throw new StreamApiError(
+        message || "Cloudflare Stream could not create a resumable upload.",
+        response.status,
+      );
+    }
+    const uid = new URL(uploadURL).pathname.split("/").filter(Boolean).at(-1);
+    if (!uid) {
+      throw new StreamApiError(
+        "Cloudflare Stream returned an invalid resumable upload URL.",
+        502,
+      );
+    }
+    return { uid, uploadURL, uploadProtocol: "tus" };
+  }
+
   const result = await streamRequest<{ uid?: string; uploadURL?: string }>(
     "/direct_upload",
     {
@@ -100,6 +179,7 @@ export async function createStreamDirectUpload(input: {
         meta: {
           titleId: input.titleId,
           episodeId: input.episodeId,
+          filename: input.filename?.slice(0, 255) ?? null,
         },
       }),
     },
@@ -112,7 +192,7 @@ export async function createStreamDirectUpload(input: {
     );
   }
 
-  return { uid: result.uid, uploadURL: result.uploadURL };
+  return { uid: result.uid, uploadURL: result.uploadURL, uploadProtocol: "post" };
 }
 
 export async function getStreamVideo(
@@ -125,14 +205,11 @@ export async function getStreamVideo(
 }
 
 export async function deleteStreamVideo(providerUid: string): Promise<void> {
-  const { accountId, apiToken } = getConfig();
-  const response = await fetch(
-    `https://api.cloudflare.com/client/v4/accounts/${encodeURIComponent(accountId)}/stream/${encodeURIComponent(providerUid)}`,
-    {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${apiToken}` },
-      signal: AbortSignal.timeout(30_000),
-    },
+  const accountId = await getAccountId();
+  const response = await connectors.proxy(
+    "cloudflare",
+    `/v4/accounts/${encodeURIComponent(accountId)}/stream/${encodeURIComponent(providerUid)}`,
+    { method: "DELETE" },
   );
 
   if (response.status === 404) return;

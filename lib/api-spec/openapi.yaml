@@ -225,6 +225,29 @@ paths:
                   $ref: "#/components/schemas/CatalogTitle"
         "403":
           description: Admin access required
+  /admin/series/{seriesId}:
+    get:
+      operationId: getAdminSeriesDetail
+      tags: [admin]
+      summary: Get a series with its seasons and episodes
+      parameters:
+        - in: path
+          name: seriesId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Series with seasons and episodes
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CatalogDetail"
+        "403":
+          description: Admin access required
+        "404":
+          description: Series not found
   /admin/movies:
     post:
       operationId: createMovie
@@ -632,10 +655,11 @@ components:
         id: { type: string, format: uuid }
         seasonNumber: { type: integer }
         title: { type: string }
+        description: { type: string }
         episodes:
           type: array
           items: { $ref: "#/components/schemas/Episode" }
-      required: [id, seasonNumber, title, episodes]
+      required: [id, seasonNumber, title, description, episodes]
     Genre:
       type: object
       properties:
@@ -808,6 +832,8 @@ components:
         titleId: { type: string, format: uuid }
         episodeId: { type: ["string", "null"], format: uuid }
         maxDurationSeconds: { type: integer, minimum: 1, maximum: 21600 }
+        uploadLength: { type: integer, minimum: 1 }
+        filename: { type: string, maxLength: 255 }
       required: [titleId, episodeId, maxDurationSeconds]
     VideoUpload:
       type: object
@@ -815,7 +841,8 @@ components:
         assetId: { type: string, format: uuid }
         providerUid: { type: string }
         uploadUrl: { type: string, format: uri }
-      required: [assetId, providerUid, uploadUrl]
+        uploadProtocol: { type: string, enum: [post, tus] }
+      required: [assetId, providerUid, uploadUrl, uploadProtocol]
     MediaAsset:
       type: object
       properties:

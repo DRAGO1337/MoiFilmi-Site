@@ -15,4 +15,8 @@ export interface VideoUploadInput {
      * @maximum 21600
      */
   maxDurationSeconds: number;
+  /** @minimum 1 */
+  uploadLength?: number;
+  /** @maxLength 255 */
+  filename?: string;
 }

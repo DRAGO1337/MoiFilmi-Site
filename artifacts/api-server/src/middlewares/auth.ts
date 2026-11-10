@@ -1,7 +1,12 @@
 import { clerkClient, getAuth } from "@clerk/express";
 import type { NextFunction, Request, Response } from "express";
-import { eq } from "drizzle-orm";
-import { db, usersTable, type AppUser } from "@workspace/db";
+import { and, eq, isNull } from "drizzle-orm";
+import {
+  adminBootstrapTable,
+  db,
+  usersTable,
+  type AppUser,
+} from "@workspace/db";
 
 declare global {
   namespace Express {
@@ -11,13 +16,40 @@ declare global {
   }
 }
 
-function configuredAdminEmails(): Set<string> {
-  return new Set(
-    (process.env.MOIFILMI_ADMIN_EMAILS ?? "")
-      .split(",")
-      .map((email) => email.trim().toLowerCase())
-      .filter(Boolean),
-  );
+async function claimInitialAdmin(user: AppUser): Promise<AppUser> {
+  if (!user.emailVerified || user.role === "admin") return user;
+
+  return db.transaction(async (tx) => {
+    const [bootstrap] = await tx
+      .select()
+      .from(adminBootstrapTable)
+      .where(
+        and(
+          eq(adminBootstrapTable.email, user.email.toLowerCase()),
+          isNull(adminBootstrapTable.claimedAt),
+        ),
+      )
+      .for("update")
+      .limit(1);
+
+    if (!bootstrap) return user;
+
+    const [admin] = await tx
+      .update(usersTable)
+      .set({ role: "admin", updatedAt: new Date() })
+      .where(eq(usersTable.id, user.id))
+      .returning();
+    await tx
+      .update(adminBootstrapTable)
+      .set({ claimedUserId: user.id, claimedAt: new Date() })
+      .where(
+        and(
+          eq(adminBootstrapTable.id, bootstrap.id),
+          isNull(adminBootstrapTable.claimedAt),
+        ),
+      );
+    return admin ?? user;
+  });
 }
 
 async function getOrCreateAppUser(userId: string): Promise<AppUser> {
@@ -27,24 +59,7 @@ async function getOrCreateAppUser(userId: string): Promise<AppUser> {
     .where(eq(usersTable.id, userId))
     .limit(1);
 
-  if (existing) {
-    const role =
-      existing.emailVerified &&
-      configuredAdminEmails().has(existing.email.toLowerCase())
-        ? "admin"
-        : "viewer";
-
-    if (existing.role !== role) {
-      const [updated] = await db
-        .update(usersTable)
-        .set({ role, updatedAt: new Date() })
-        .where(eq(usersTable.id, userId))
-        .returning();
-      return updated;
-    }
-
-    return existing;
-  }
+  if (existing?.emailVerified) return claimInitialAdmin(existing);
 
   const clerkUser = await clerkClient.users.getUser(userId);
   const primaryEmail =
@@ -58,8 +73,6 @@ async function getOrCreateAppUser(userId: string): Promise<AppUser> {
 
   const email = primaryEmail.emailAddress.trim().toLowerCase();
   const emailVerified = primaryEmail.verification?.status === "verified";
-  const role =
-    emailVerified && configuredAdminEmails().has(email) ? "admin" : "viewer";
   const displayName =
     clerkUser.fullName?.trim() ||
     [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(" ").trim() ||
@@ -73,7 +86,7 @@ async function getOrCreateAppUser(userId: string): Promise<AppUser> {
       displayName,
       avatarUrl: clerkUser.imageUrl || null,
       emailVerified,
-      role,
+      role: "viewer",
     })
     .onConflictDoUpdate({
       target: usersTable.id,
@@ -81,13 +94,12 @@ async function getOrCreateAppUser(userId: string): Promise<AppUser> {
         email,
         avatarUrl: clerkUser.imageUrl || null,
         emailVerified,
-        role,
         updatedAt: new Date(),
       },
     })
     .returning();
 
-  return created;
+  return claimInitialAdmin(created);
 }
 
 export async function requireViewer(

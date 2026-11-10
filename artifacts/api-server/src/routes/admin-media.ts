@@ -252,6 +252,8 @@ router.post(
       creator: req.appUser!.id,
       titleId: title.id,
       episodeId: parsed.data.episodeId,
+      uploadLength: parsed.data.uploadLength,
+      filename: parsed.data.filename,
     });
     const [asset] = await db
       .insert(mediaAssetsTable)
@@ -271,6 +273,7 @@ router.post(
         assetId: asset.id,
         providerUid: upload.uid,
         uploadUrl: upload.uploadURL,
+        uploadProtocol: upload.uploadProtocol,
       }),
     );
   } catch (error) {

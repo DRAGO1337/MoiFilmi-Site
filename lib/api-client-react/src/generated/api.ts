@@ -1245,6 +1245,107 @@ export function useGetAdminCatalog<TData = Awaited<ReturnType<typeof getAdminCat
 
 
 
+export const getGetAdminSeriesDetailUrl = (seriesId: string,) => {
+
+
+
+
+  return `/api/admin/series/${seriesId}`
+}
+
+/**
+ * @summary Get a series with its seasons and episodes
+ */
+export const getAdminSeriesDetail = async (seriesId: string, options?: Parameters<typeof customFetch>[1]): Promise<CatalogDetail> => {
+
+  return customFetch<CatalogDetail>(getGetAdminSeriesDetailUrl(seriesId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAdminSeriesDetailQueryKey = (seriesId: string,) => {
+    return [
+    `/api/admin/series/${seriesId}`
+    ] as const;
+    }
+
+
+export const getGetAdminSeriesDetailQueryOptions = <TData = Awaited<ReturnType<typeof getAdminSeriesDetail>>, TError = ErrorType<void>>(seriesId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminSeriesDetail>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAdminSeriesDetailQueryKey(seriesId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminSeriesDetail>>> = ({ signal }) => getAdminSeriesDetail(seriesId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: seriesId !== null && seriesId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminSeriesDetail>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAdminSeriesDetailQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminSeriesDetail>>>
+export type GetAdminSeriesDetailQueryError = ErrorType<void>
+
+
+export function useGetAdminSeriesDetail<TData = Awaited<ReturnType<typeof getAdminSeriesDetail>>, TError = ErrorType<void>>(
+ seriesId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminSeriesDetail>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAdminSeriesDetail>>,
+          TError,
+          Awaited<ReturnType<typeof getAdminSeriesDetail>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAdminSeriesDetail<TData = Awaited<ReturnType<typeof getAdminSeriesDetail>>, TError = ErrorType<void>>(
+ seriesId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminSeriesDetail>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAdminSeriesDetail>>,
+          TError,
+          Awaited<ReturnType<typeof getAdminSeriesDetail>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAdminSeriesDetail<TData = Awaited<ReturnType<typeof getAdminSeriesDetail>>, TError = ErrorType<void>>(
+ seriesId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminSeriesDetail>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get a series with its seasons and episodes
+ */
+
+export function useGetAdminSeriesDetail<TData = Awaited<ReturnType<typeof getAdminSeriesDetail>>, TError = ErrorType<void>>(
+ seriesId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminSeriesDetail>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAdminSeriesDetailQueryOptions(seriesId,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
 export const getCreateMovieUrl = () => {
 
 
